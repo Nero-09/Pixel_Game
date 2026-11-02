@@ -70,9 +70,19 @@ int main(){
         tileSheetCard.columns = columns;
         tileSheetCard.texture = texture;
         tilesheets.push_back(tileSheetCard);
+
     }
 
     TraceLog(LOG_INFO, "size: %d, firstgid: %d, columns: %d, texture: %d", (int) tilesheets.size(), tilesheets[7].firstgid, tilesheets[0].columns, tilesheets[0].texture.width);
+
+    // Find the Ground
+    for(const auto &layer : map["layers"]){
+        std::string layerName = layer.value("name", "Unknown");
+        if(layerName == "Ground"){
+            TraceLog(LOG_INFO, ("Found The Ground"));
+        }
+
+    }
 
 
 
