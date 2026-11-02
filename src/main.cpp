@@ -1,4 +1,3 @@
-
 #include <raylib.h>
 #include <vector>
 #include <fstream>
@@ -7,10 +6,10 @@ using json = nlohmann::json;
 #include <string>
 
 // Represents one tilesheet from Tiled.
-//
+
 // A map can use multiple tilesheets. Each tilesheet has its own
 // range of global tile IDs (GIDs).
-//
+
 // firstgid  = first global ID belonging to this tilesheet
 // columns   = number of tiles horizontally in the tilesheet
 // tilecount = total number of tiles in the tilesheet
@@ -32,7 +31,7 @@ void obstacleCollision(Vector2 &pos, int playerSize, Rectangle obstacle, Vector2
     }
 }
 
-void loadMap(json map, std::string tileName, int mapWidth, std::vector<TileSheet> tilesheets){
+void loadMap(const json &map, const std::string& tileName, int mapWidth, std::vector<TileSheet> &tilesheets){
 
      for(const auto &layer : map["layers"]){
             // Read the current layer's name.
@@ -44,8 +43,8 @@ void loadMap(json map, std::string tileName, int mapWidth, std::vector<TileSheet
                 // Get the array containing all tile IDs in this layer.
                 const auto &cells = layer["data"];
 
-                TraceLog(LOG_INFO, "Ground cells: %d", (int)cells.size());
-                TraceLog(LOG_INFO, ("Found The Ground"));
+                // TraceLog(LOG_INFO, "Ground cells: %d", (int)cells.size());
+                // TraceLog(LOG_INFO, ("Found The Ground"));
 
                 // ==========================================
                 // 9. READ EACH CELL
@@ -72,7 +71,7 @@ void loadMap(json map, std::string tileName, int mapWidth, std::vector<TileSheet
                         int row = i / mapWidth;
                         int column = i % mapWidth;
 
-                        TraceLog(LOG_INFO,"Row: %d, Column: %d", row, column);
+                        // TraceLog(LOG_INFO,"Row: %d, Column: %d", row, column);
 
                         // ==========================================
                         // 10. FIND THE CORRECT TILESET
@@ -98,9 +97,6 @@ void loadMap(json map, std::string tileName, int mapWidth, std::vector<TileSheet
                                 int localId = id - sheet.firstgid;
 
                                 // Convert localId into tilesheet coordinates.
-                                //
-                                // tileRow    = vertical tile position
-                                // tileColumn = horizontal tile position
                                 int tileRow = localId / sheet.columns;
                                 int tileColumn = localId % sheet.columns;
 
@@ -110,7 +106,6 @@ void loadMap(json map, std::string tileName, int mapWidth, std::vector<TileSheet
 
                                 // Find the pixel position of the tile
                                 // INSIDE the tilesheet image.
-                                //
                                 // Each tile is 16x16 pixels.
                                 int sourceX = tileColumn * 16;
                                 int sourceY = tileRow * 16;
@@ -192,7 +187,7 @@ int main(){
         std::string imagePath = "./assets/"; 
         std::string image = imagePath + mapRender.value("image", "");
 
-        TraceLog(LOG_INFO, "firstgid %d, columns %d, image %s", firstgid, columns, image.c_str());
+        // TraceLog(LOG_INFO, "firstgid %d, columns %d, image %s", firstgid, columns, image.c_str());
 
         // Load the tilesheet image into GPU memory.
         Texture2D texture = LoadTexture(image.c_str());
@@ -214,7 +209,7 @@ int main(){
     }
 
     // Debug information about the loaded tilesheets.
-    TraceLog(LOG_INFO, "size: %d, firstgid: %d, columns: %d, texture: %d", (int) tilesheets.size(), tilesheets[7].firstgid, tilesheets[0].columns, tilesheets[0].texture.width);
+    // TraceLog(LOG_INFO, "size: %d, firstgid: %d, columns: %d, texture: %d", (int) tilesheets.size(), tilesheets[7].firstgid, tilesheets[0].columns, tilesheets[0].texture.width);
 
     // ==========================================
     // 3. GET MAP DIMENSIONS
@@ -224,7 +219,7 @@ int main(){
     int mapWidth = map.value("width", -1);
     int mapHeight = map.value("height", -1);
 
-    TraceLog(LOG_INFO, "width: %d, height: %d",mapWidth, mapHeight);
+    // TraceLog(LOG_INFO, "width: %d, height: %d",mapWidth, mapHeight);
 
     // ==========================================
     // 5. GAME SETTINGS
@@ -233,12 +228,10 @@ int main(){
     SetTargetFPS(60);
     Color BackgroundCharcoal = { 40, 40, 40, 255 };
 
-    // Map position (currently starts at the top-left corner).
-    Vector2 mapPosition = {0, 0};
 
     // Player Variables
-    // Player starts near the house.
-    Vector2 playerPosition = { 328, 536 };
+    Vector2 playerPosition = {0,0};
+    // Vector2 playerPosition = { GetScreenWidth() / 2, GetScreenHeight() / 2 };
     Color playerColor = MAROON;
     int playerSize = 10;
     float playerMovement = 250.0;
@@ -276,13 +269,13 @@ int main(){
         ClearBackground(BackgroundCharcoal);
 
  
-        // std::string tileName = "Roof";
-
+        // Loads all the tile sets for the map
         loadMap(map, "Grass", mapWidth, tilesheets);
         loadMap(map, "Ground", mapWidth, tilesheets);
         loadMap(map, "Roof", mapWidth, tilesheets);
         loadMap(map, "Bushes", mapWidth, tilesheets);
         loadMap(map, "Props", mapWidth, tilesheets);
+        DrawFPS(10, 10);
 
         // Finish drawing this frame.
         EndDrawing();
