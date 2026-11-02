@@ -1,0 +1,129 @@
+{
+    "activeFile": "beta-map.tmj",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "/home/abc1/Desktop/RaylibLearning/assets/Props.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Farm.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
+        "Floors_Tiles.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Idle-Sheet.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Props.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
+        "Roofs.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Size_02.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
+        "Size_04.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Vegetation.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
+        "Walls.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Water_tiles.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "beta-map.tmj": {
+            "scale": 1.5,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 404,
+                "y": 399.66666666666663
+            }
+        },
+        "beta-map.tmj#Farm": {
+            "scaleInDock": 1
+        },
+        "beta-map.tmj#Floors_Tiles": {
+            "scaleInDock": 1
+        },
+        "beta-map.tmj#Idle-Sheet": {
+            "scaleInDock": 1
+        },
+        "beta-map.tmj#Props": {
+            "scaleInDock": 1
+        },
+        "beta-map.tmj#Roofs": {
+            "scaleInDock": 1
+        },
+        "beta-map.tmj#Size_04": {
+            "scaleInDock": 1
+        },
+        "beta-map.tmj#Vegetation": {
+            "scaleInDock": 1
+        },
+        "beta-map.tmj#Walls": {
+            "scaleInDock": 1
+        },
+        "beta-map.tmj#Water_tiles": {
+            "scaleInDock": 1
+        }
+    },
+    "last.exportedFilePath": "/home/abc1/Desktop/PixelGame/assets",
+    "last.imagePath": "/home/abc1/Desktop/PixelGame/assets/Pixel Crawler/Entities/Npc's/Citizen_F/Peasant_A/Idle",
+    "map.height": 50,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "json",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 50,
+    "openFiles": [
+        "beta-map.tmj",
+        "Roofs.tsx",
+        "Props.tsx",
+        "Floors_Tiles.tsx",
+        "Walls.tsx",
+        "Vegetation.tsx",
+        "Size_02.tsx",
+        "Size_04.tsx",
+        "Farm.tsx",
+        "Water_tiles.tsx",
+        "Idle-Sheet.tsx",
+        "/home/abc1/Desktop/RaylibLearning/assets/Props.tsx"
+    ],
+    "project": "first_map.tiled-project",
+    "recentFiles": [
+        "/home/abc1/Desktop/RaylibLearning/assets/Props.tsx",
+        "Idle-Sheet.tsx",
+        "Water_tiles.tsx",
+        "Farm.tsx",
+        "Size_04.tsx",
+        "Size_02.tsx",
+        "Vegetation.tsx",
+        "Walls.tsx",
+        "Floors_Tiles.tsx",
+        "Props.tsx",
+        "Roofs.tsx",
+        "beta-map.tmj"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}

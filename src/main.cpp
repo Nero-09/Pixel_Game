@@ -1,24 +1,18 @@
 #include <raylib.h>
-#include <iostream>
+#include <vector>
+#include <fstream>
+#include <nlohmann/json.hpp> 
+using json = nlohmann::json;
+#include <string>
 
-void screenLimitCollision(Vector2 &pos, int size){
+struct TileSheet
+{
+    int firstgid;
+    int columns;
+    Texture2D texture;
+};
 
-    if(pos.x >= GetScreenWidth() - size)      
-    pos.x = GetScreenWidth() - size;
-            
-    // Left
-    if(pos.x <= size)
-    pos.x = 0 + size;
 
-    // Down
-    if(pos.y >= GetScreenHeight() - size) 
-        pos.y = GetScreenHeight() - size;
-        // fallOneSpeed *= -0.8f;
-
-    // Up
-    if( pos.y <= size)
-    pos.y = 0 + size; 
-}
 
 // Obstacle Collision
 void obstacleCollision(Vector2 &pos, int playerSize, Rectangle obstacle, Vector2 currentPlayerPos){
@@ -27,114 +21,103 @@ void obstacleCollision(Vector2 &pos, int playerSize, Rectangle obstacle, Vector2
     }
 }
 
+
+
+// void loadMap(Vector2 mapPosition){
+
+    
+// }
+
+
 int main(){
     const int screenWidth = 800;
-    const int screenHeight = 600;
+    const int screenHeight = 800;
 
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);    // Window configuration flags
     InitWindow(screenWidth, screenHeight, "Pixel Game");
-    SetTargetFPS(60);
 
+    // Loading Map
+    std::ifstream file("./assets/beta-map.tmj");
+
+    if (!file.is_open()) {
+        TraceLog(LOG_INFO, "File not found");
+        return 1;
+    }
+
+    json map = json::parse(file, nullptr, false);
+    if(map.is_discarded()){
+        TraceLog(LOG_INFO, "Invalod JSON/.tmj file");
+        return 1;
+    }
+
+    std::vector<TileSheet> tilesheets;
+
+    for (const auto& mapRen : map["tilesets"]) {
+        int firstgid = mapRen.value("firstgid", -1);
+        int columns = mapRen.value("columns", -1);
+        std::string imagePath = "./assets/"; 
+        std::string image = imagePath + mapRen.value("image", "");
+        TraceLog(LOG_INFO, "firstgid %d, columns %d, image %s", firstgid, columns, image.c_str());
+        Texture2D texture = LoadTexture(image.c_str());
+        
+        if(texture.id == 0){
+            TraceLog(LOG_ERROR, "Could not load picture: %s", image.c_str());
+            return 1;
+        }
+
+        TileSheet tileSheetCard;
+        tileSheetCard.firstgid = firstgid;
+        tileSheetCard.columns = columns;
+        tileSheetCard.texture = texture;
+        tilesheets.push_back(tileSheetCard);
+    }
+
+    TraceLog(LOG_INFO, "size: %d, firstgid: %d, columns: %d, texture: %d", (int) tilesheets.size(), tilesheets[7].firstgid, tilesheets[0].columns, tilesheets[0].texture.width);
+
+
+
+    
+    SetTargetFPS(60);
+    Color BackgroundCharcoal = { 40, 40, 40, 255 };
+
+    // Map
+    Vector2 mapPosition = {0, 0};
 
     // Player Variables
-    Vector2 playerPosition = { GetScreenWidth() / 2, GetScreenHeight() / 2};
+    // Start on the path below the house (tile column 20, row 33 -> pixel center 328, 536)
+    Vector2 playerPosition = { 328, 536 };
     Color playerColor = MAROON;
-    int playerSize = 20;
-    float playerMovement = 400.0;
-    Vector2 currentPlayerPos;
-
-    // Npc 1
-    Vector2 npcPosition = {25, 573};
-    int npcSize = 20;
-    Color npcColor = YELLOW;
-
-
-    // Obstacles variables in Rectangle shape
-    // Obstacle 1
-    Vector2 obstacle1Position = {50, 50};
-    Color obstacleColor = BLUE;
-    Vector2 obstacleSize = {100, 500};
-    Rectangle obstacle1 = {obstacle1Position.x, obstacle1Position.y,obstacleSize.x, obstacleSize.y};
-
-    // Obstacle 2
-    Vector2 obstacle2Position = {580, 58};
-    Color obstacle2Color = BLUE;
-    Vector2 obstacle2Size = {60, 180};
-    Rectangle obstacle2 = {obstacle2Position.x, obstacle2Position.y,obstacle2Size.x, obstacle2Size.y};
-
-    // Obstacle 3
-    Vector2 obstacle3Position = {317, 143};
-    Color obstacle3Color = BLUE;
-    Vector2 obstacle3Size = {290, 40};
-    Rectangle obstacle3 = {obstacle3Position.x, obstacle3Position.y,obstacle3Size.x, obstacle3Size.y};
-
-
-    // Obstacle 4
-    Vector2 obstacle4Position = {240, 420};
-    Color obstacle4Color = BLUE;
-    Vector2 obstacle4Size = {190, 50};
-    Rectangle obstacle4 = {obstacle4Position.x, obstacle4Position.y,obstacle4Size.x, obstacle4Size.y};
-
-    // Obstacle 5
-    Vector2 obstacle5Position = {650, 370};
-    Color obstacle5Color = BLUE;
-    Vector2 obstacle5Size = {90, 300};
-    Rectangle obstacle5 = {obstacle5Position.x, obstacle5Position.y,obstacle5Size.x, obstacle5Size.y};
+    int playerSize = 10;            // radius of the collision circle (tile = 16, tune this)
+    float playerMovement = 250.0;   // pixels per second
+    Vector2 currentPlayerPos;       // position saved before moving (to undo a bad move)
 
 
     while(!WindowShouldClose()){
 
-    float deltaTime = GetFrameTime();
+        float deltaTime = GetFrameTime();
 
         currentPlayerPos = playerPosition;
 
-        // Keyboard Controls
-        if(IsKeyDown(KEY_RIGHT)) playerPosition.x += playerMovement * deltaTime;
-        if(IsKeyDown(KEY_LEFT)) playerPosition.x -= playerMovement * deltaTime;
+        // Keyboard Controls (left/right also remember which way he faces)
+        if(IsKeyDown(KEY_RIGHT)){
+            playerPosition.x += playerMovement * deltaTime;
+        }
+        if(IsKeyDown(KEY_LEFT)){
+            playerPosition.x -= playerMovement * deltaTime;
+        }
         if(IsKeyDown(KEY_UP)) playerPosition.y -= playerMovement * deltaTime;
         if(IsKeyDown(KEY_DOWN)) playerPosition.y += playerMovement * deltaTime;
-         
-        screenLimitCollision(playerPosition, playerSize);
 
-        // Finding Coordinates for obstacles
-        std::cout << "X: " << GetMouseX() <<::std::endl;
-        std::cout << "Y: " << GetMouseY() <<::std::endl;
-
-        
-        // Obsctacle Collision
-        obstacleCollision(playerPosition, playerSize, obstacle1, currentPlayerPos);
-        obstacleCollision(playerPosition, playerSize, obstacle2, currentPlayerPos);
-        obstacleCollision(playerPosition, playerSize, obstacle3, currentPlayerPos);
-        obstacleCollision(playerPosition, playerSize, obstacle4, currentPlayerPos);
-        obstacleCollision(playerPosition, playerSize, obstacle5, currentPlayerPos);
-
-        
+   
         BeginDrawing();
 
-        ClearBackground({ 40, 40, 40, 255 });
-
-        // Player
-        DrawCircleV(playerPosition, playerSize,playerColor);
-        DrawText("Find the Yellow Ball", 300, 50, 20, MAROON);
-
-        // Npc
-        DrawCircleV(npcPosition, npcSize, npcColor);
-
-
-        // Npc Interaction
-        if (CheckCollisionCircles(playerPosition, playerSize, npcPosition, npcSize)){
-            DrawText("HI, Congratulation You Found Me.", 250, 295, 20, YELLOW);
-        }
-
-        // Obstacles
-        DrawRectangleV(obstacle1Position, obstacleSize, obstacleColor);
-        DrawRectangleV(obstacle2Position, obstacle2Size, obstacle2Color);
-        DrawRectangleV(obstacle3Position, obstacle3Size, obstacle3Color);
-        DrawRectangleV(obstacle4Position, obstacle4Size, obstacle4Color);
-        DrawRectangleV(obstacle5Position, obstacle5Size, obstacle5Color);
-   
+        ClearBackground(BackgroundCharcoal);
         EndDrawing();
     }
 
+    for(const TileSheet& sheet: tilesheets){
+        UnloadTexture(sheet.texture);
+    }
     CloseWindow();
     return 0;
 }
