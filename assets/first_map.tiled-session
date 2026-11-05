@@ -4,6 +4,9 @@
         "."
     ],
     "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
         "/home/abc1/Desktop/RaylibLearning/assets/Props.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
@@ -37,7 +40,7 @@
             "scaleInEditor": 1
         },
         "Vegetation.tsx": {
-            "scaleInDock": 1.5,
+            "scaleInDock": 2,
             "scaleInEditor": 1
         },
         "Walls.tsx": {
@@ -50,17 +53,17 @@
         },
         "beta-map.tmj": {
             "scale": 1.5,
-            "selectedLayer": 5,
+            "selectedLayer": 7,
             "viewCenter": {
-                "x": 404,
-                "y": 399.66666666666663
+                "x": 397.66666666666663,
+                "y": 524.3333333333334
             }
         },
         "beta-map.tmj#Farm": {
             "scaleInDock": 1
         },
         "beta-map.tmj#Floors_Tiles": {
-            "scaleInDock": 1
+            "scaleInDock": 2
         },
         "beta-map.tmj#Idle-Sheet": {
             "scaleInDock": 1
@@ -69,6 +72,9 @@
             "scaleInDock": 1
         },
         "beta-map.tmj#Roofs": {
+            "scaleInDock": 1
+        },
+        "beta-map.tmj#Size_02": {
             "scaleInDock": 1
         },
         "beta-map.tmj#Size_04": {

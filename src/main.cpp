@@ -1,4 +1,6 @@
 #include <raylib.h>
+#include <raymath.h>
+
 #include <vector>
 #include <fstream>
 #include <nlohmann/json.hpp> 
@@ -33,9 +35,9 @@ void obstacleCollision(Vector2 &pos, int playerSize, Rectangle obstacle, Vector2
 
 void loadMap(const json &map, const std::string& tileName, int mapWidth, std::vector<TileSheet> &tilesheets){
 
-     for(const auto &layer : map["layers"]){
-            // Read the current layer's name.
-            std::string layerName = layer.value("name", "Unknown");
+    for(const auto &layer : map["layers"]){
+        // Read the current layer's name.
+        std::string layerName = layer.value("name", "Unknown");
 
             // Gets idividual layer name
             if(layerName == tileName){
@@ -135,7 +137,7 @@ void loadMap(const json &map, const std::string& tileName, int mapWidth, std::ve
                     }
                 }
             }
-        }
+    }
 
 
 
@@ -143,6 +145,7 @@ void loadMap(const json &map, const std::string& tileName, int mapWidth, std::ve
 
 int main(){
     const int screenWidth = 800;
+    // const int screenHeight = 450;
     const int screenHeight = 800;
 
     // Make the window resizable before initializing it.
@@ -187,7 +190,7 @@ int main(){
         std::string imagePath = "./assets/"; 
         std::string image = imagePath + mapRender.value("image", "");
 
-        // TraceLog(LOG_INFO, "firstgid %d, columns %d, image %s", firstgid, columns, image.c_str());
+        TraceLog(LOG_INFO, "firstgid %d, columns %d, image %s", firstgid, columns, image.c_str());
 
         // Load the tilesheet image into GPU memory.
         Texture2D texture = LoadTexture(image.c_str());
@@ -222,20 +225,38 @@ int main(){
     // TraceLog(LOG_INFO, "width: %d, height: %d",mapWidth, mapHeight);
 
     // ==========================================
-    // 5. GAME SETTINGS
+    // Names of the components of the map
+    // ==========================================
+    std::vector<std::string> tileSets = {"Grass", "Ground", "Roof", "Trees", "Bushes", "Props"}; 
+
+
+    // ==========================================
+    // GAME SETTINGS
     // ==========================================
 
-    SetTargetFPS(60);
     Color BackgroundCharcoal = { 40, 40, 40, 255 };
 
 
     // Player Variables
-    Vector2 playerPosition = {0,0};
+    Vector2 playerPosition = { 400, 225};
+        // Vector2 playerPosition = { GetScreenWidth() / 2, GetScreenHeight() / 2};
     // Vector2 playerPosition = { GetScreenWidth() / 2, GetScreenHeight() / 2 };
     Color playerColor = MAROON;
     int playerSize = 10;
-    float playerMovement = 250.0;
+    float playerMovement = 120.0;
     Vector2 currentPlayerPos;
+
+    // =======================================
+    // Camera 
+    // =======================================
+    Camera2D camera = { 0 };
+    camera.target = (Vector2){ playerPosition.x + 20.0f, playerPosition.y + 20.0f };
+    camera.offset = (Vector2){ GetRenderWidth()/2.0f, GetRenderHeight()/2.0f };
+    camera.rotation = 0.0f;
+    camera.zoom = 3.0f;
+
+    // Sets the FPS 
+    SetTargetFPS(60);
 
     // ==========================================
     // 6. MAIN GAME LOOP
@@ -259,6 +280,11 @@ int main(){
         if(IsKeyDown(KEY_DOWN)) playerPosition.y += playerMovement * deltaTime;
 
         // ==========================================
+        // Camera angle that follows the player
+        // ==========================================
+        camera.target = (Vector2){ playerPosition.x + 20, playerPosition.y + 20 };
+
+        // ==========================================
         // 7. DRAWING
         // ==========================================
 
@@ -268,15 +294,17 @@ int main(){
         // This prevents old frame contents from remaining visible.
         ClearBackground(BackgroundCharcoal);
 
+        BeginMode2D(camera);
  
-        // Loads all the tile sets for the map
-        loadMap(map, "Grass", mapWidth, tilesheets);
-        loadMap(map, "Ground", mapWidth, tilesheets);
-        loadMap(map, "Roof", mapWidth, tilesheets);
-        loadMap(map, "Bushes", mapWidth, tilesheets);
-        loadMap(map, "Props", mapWidth, tilesheets);
-        DrawFPS(10, 10);
 
+        for(const auto &tileSetsName : tileSets){
+            loadMap(map, tileSetsName, mapWidth, tilesheets);
+        }
+
+        DrawCircleV(playerPosition, playerSize, MAROON);
+        DrawFPS(10, 10);
+        
+        EndMode2D();
         // Finish drawing this frame.
         EndDrawing();
     }
