@@ -1,147 +1,16 @@
+
 #include <raylib.h>
 #include <raymath.h>
 
 #include <vector>
 #include <fstream>
-#include <nlohmann/json.hpp> 
+#include <nlohmann/json.hpp>
 using json = nlohmann::json;
 #include <string>
 
-// Represents one tilesheet from Tiled.
+#include "map/loadMap.hpp"
+#include "player/player.hpp"
 
-// A map can use multiple tilesheets. Each tilesheet has its own
-// range of global tile IDs (GIDs).
-
-// firstgid  = first global ID belonging to this tilesheet
-// columns   = number of tiles horizontally in the tilesheet
-// tilecount = total number of tiles in the tilesheet
-// texture   = the actual loaded image
-struct TileSheet
-{
-    int firstgid;
-    int columns;
-    int tilecount;
-    Texture2D texture;
-};
-
-
-// Obstacle Collision
-void obstacleCollision(Vector2 &pos, int playerSize, Rectangle obstacle, Vector2 currentPlayerPos){
-    if(CheckCollisionCircleRec(pos, playerSize, obstacle)) {
-        // If collision happens, restore the player's previous position.
-        pos = currentPlayerPos;
-    }
-}
-
-void loadMap(const json &map, const std::string& tileName, int mapWidth, std::vector<TileSheet> &tilesheets){
-
-    for(const auto &layer : map["layers"]){
-        // Read the current layer's name.
-        std::string layerName = layer.value("name", "Unknown");
-
-            // Gets idividual layer name
-            if(layerName == tileName){
-
-                // Get the array containing all tile IDs in this layer.
-                const auto &cells = layer["data"];
-
-                // TraceLog(LOG_INFO, "Ground cells: %d", (int)cells.size());
-                // TraceLog(LOG_INFO, ("Found The Ground"));
-
-                // ==========================================
-                // 9. READ EACH CELL
-                // ==========================================
-
-                // i is the flattened array index.
-                // Each index represents one tile position in the map.
-                for (int i = 0; i < cells.size(); ++i) {
-
-                    // Read the global tile ID (GID).
-                    int id = cells[i].get<int>();
-
-                    // ID 0 means this cell is empty.
-                    if(id > 0){
-
-                        // Convert the flattened array index into map coordinates.
-                        //
-                        // Example:
-                        // mapWidth = 10, i = 23
-                        // row = 23 / 10 = 2
-                        // column = 23 % 10 = 3
-                        //
-                        // So this tile is at column 3, row 2.
-                        int row = i / mapWidth;
-                        int column = i % mapWidth;
-
-                        // TraceLog(LOG_INFO,"Row: %d, Column: %d", row, column);
-
-                        // ==========================================
-                        // 10. FIND THE CORRECT TILESET
-                        // ==========================================
-
-                        // Check every loaded tilesheet.
-                        for (const TileSheet& sheet : tilesheets) {
-
-                            // Check whether this GID belongs to this tilesheet.
-                            //
-                            // Valid IDs:
-                            // firstgid <= id < firstgid + tilecount
-                            //
-                            // This prevents selecting the wrong tilesheet.
-                            if(id >=sheet.firstgid && id < sheet.firstgid + sheet.tilecount){
-
-                                // ==========================================
-                                // 11. CONVERT GLOBAL ID TO LOCAL ID
-                                // ==========================================
-
-                                // GID is global across the entire map.
-                                // localId is the tile's index inside this tilesheet.
-                                int localId = id - sheet.firstgid;
-
-                                // Convert localId into tilesheet coordinates.
-                                int tileRow = localId / sheet.columns;
-                                int tileColumn = localId % sheet.columns;
-
-                                // ==========================================
-                                // 12. SOURCE COORDINATES
-                                // ==========================================
-
-                                // Find the pixel position of the tile
-                                // INSIDE the tilesheet image.
-                                // Each tile is 16x16 pixels.
-                                int sourceX = tileColumn * 16;
-                                int sourceY = tileRow * 16;
-
-                                // ==========================================
-                                // 13. DESTINATION COORDINATES
-                                // ==========================================
-
-                                // Find where the tile should appear
-                                // INSIDE the game window.
-                                //
-                                // Map coordinates are converted into pixels.
-                                int destX = column * 16;
-                                int destY = row * 16;
-
-                                Vector2 position = { (float)destX, (float)destY };
-
-                                // Rectangle selects the tile's pixels
-                                // from the original tilesheet.
-                                Rectangle groundRec = {(float)sourceX, (float)sourceY, 16.0f, 16.0f};
-
-                                // Draw the selected part of the tilesheet
-                                // at the destination position.
-                                DrawTextureRec(sheet.texture, groundRec, position, WHITE);
-                            }
-                        }
-                    }
-                }
-            }
-    }
-
-
-
-}
 
 int main(){
     const int screenWidth = 800;
@@ -157,6 +26,7 @@ int main(){
 
     if (!file.is_open()) {
         TraceLog(LOG_INFO, "File not found");
+        CloseWindow();
         return 1;
     }
 
@@ -165,12 +35,13 @@ int main(){
     json map = json::parse(file, nullptr, false);
 
     if(map.is_discarded()){
-        TraceLog(LOG_INFO, "Invalod JSON/.tmj file");
+        TraceLog(LOG_INFO, "Invalid JSON/.tmj file");
+        CloseWindow();
         return 1;
     }
 
     // ==========================================
-    // 2. LOAD ALL TILESETS
+    //  LOAD ALL TILESETS
     // ==========================================
 
     // Each tileset is stored inside this vector.
@@ -187,7 +58,7 @@ int main(){
 
         // Build the image path.
         // Example: ./assets/tiles.png
-        std::string imagePath = "./assets/"; 
+        std::string imagePath = "./assets/";
         std::string image = imagePath + mapRender.value("image", "");
 
         TraceLog(LOG_INFO, "firstgid %d, columns %d, image %s", firstgid, columns, image.c_str());
@@ -197,6 +68,12 @@ int main(){
 
         if(texture.id == 0){
             TraceLog(LOG_ERROR, "Could not load picture: %s", image.c_str());
+
+            for(const TileSheet& sheet : tilesheets){
+                UnloadTexture(sheet.texture);
+            }
+
+            CloseWindow();
             return 1;
         }
 
@@ -227,7 +104,7 @@ int main(){
     // ==========================================
     // Names of the components of the map
     // ==========================================
-    std::vector<std::string> tileSets = {"Grass", "Ground", "Roof", "Trees", "Bushes", "Props"}; 
+    std::vector<std::string> tileSets = {"Grass", "Ground", "Roof", "Trees", "Bushes", "Props", "PlayerCharacter"};
 
 
     // ==========================================
@@ -236,26 +113,24 @@ int main(){
 
     Color BackgroundCharcoal = { 40, 40, 40, 255 };
 
+    // ==========================================
+    // PLAYER
+    // ==========================================
 
-    // Player Variables
-    Vector2 playerPosition = { 400, 225};
-        // Vector2 playerPosition = { GetScreenWidth() / 2, GetScreenHeight() / 2};
-    // Vector2 playerPosition = { GetScreenWidth() / 2, GetScreenHeight() / 2 };
-    Color playerColor = MAROON;
-    int playerSize = 10;
-    float playerMovement = 120.0;
-    Vector2 currentPlayerPos;
+    Player player;
+    loadPlayer(player);
+
 
     // =======================================
-    // Camera 
+    // Camera
     // =======================================
     Camera2D camera = { 0 };
-    camera.target = (Vector2){ playerPosition.x + 20.0f, playerPosition.y + 20.0f };
+    camera.target = (Vector2){ player.position.x + 20.0f, player.position.y + 20.0f };
     camera.offset = (Vector2){ GetRenderWidth()/2.0f, GetRenderHeight()/2.0f };
     camera.rotation = 0.0f;
     camera.zoom = 3.0f;
 
-    // Sets the FPS 
+    // Sets the FPS
     SetTargetFPS(60);
 
     // ==========================================
@@ -267,22 +142,12 @@ int main(){
         float deltaTime = GetFrameTime();
 
         // Save the player's position before movement.
-        currentPlayerPos = playerPosition;
-
-        // Keyboard Controls
-        if(IsKeyDown(KEY_RIGHT)){
-            playerPosition.x += playerMovement * deltaTime;
-        }
-        if(IsKeyDown(KEY_LEFT)){
-            playerPosition.x -= playerMovement * deltaTime;
-        }
-        if(IsKeyDown(KEY_UP)) playerPosition.y -= playerMovement * deltaTime;
-        if(IsKeyDown(KEY_DOWN)) playerPosition.y += playerMovement * deltaTime;
+        movePlayerWithKeyboard(player, deltaTime);
 
         // ==========================================
         // Camera angle that follows the player
         // ==========================================
-        camera.target = (Vector2){ playerPosition.x + 20, playerPosition.y + 20 };
+        camera.target = (Vector2){ player.position.x + 20, player.position.y + 20 };
 
         // ==========================================
         // 7. DRAWING
@@ -295,16 +160,23 @@ int main(){
         ClearBackground(BackgroundCharcoal);
 
         BeginMode2D(camera);
- 
 
         for(const auto &tileSetsName : tileSets){
             loadMap(map, tileSetsName, mapWidth, tilesheets);
         }
 
-        DrawCircleV(playerPosition, playerSize, MAROON);
-        DrawFPS(10, 10);
-        
+        // Draws the Player
+        if(player.isPlayerWalking){
+            DrawTextureRec(player.walkTexture, player.walkFrameRec, player.position, WHITE);
+
+        } else{
+            DrawTextureRec(player.idleTexture, player.idleFrameRec,player.position,WHITE);
+        }
+
         EndMode2D();
+
+        DrawFPS(10, 10);
+
         // Finish drawing this frame.
         EndDrawing();
     }
@@ -312,6 +184,8 @@ int main(){
     // ==========================================
     // 14. CLEANUP
     // ==========================================
+
+    unloadPlayer(player);
 
     // Release every loaded texture from GPU memory.
     for(const TileSheet& sheet: tilesheets){
