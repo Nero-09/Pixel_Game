@@ -6,25 +6,32 @@
 struct Player
 {
     Texture2D idleTexture;
-    Rectangle idleFrameRec;
-    int currentIdleFrame;
-
-
     Texture2D walkTexture;
-    Rectangle walkFrameRec;    
-    bool isPlayerWalking;
-    int currentWalkFrame;
+    Texture2D walkUpTexture;
+    Texture2D walkDownTexture;
 
+    Rectangle idleFrameRec;
+    Rectangle walkFrameRec;
+    Rectangle walkUpFrameRec;
+    Rectangle walkDownFrameRec;
+
+    bool isPlayerWalking;
     bool isFacingLeft;
+    bool isFacingUp;
+    bool isFacingDown;
+    
+    int currentIdleFrame;
+    int currentWalkFrame;
+    int currentWalkUpFrame;
+    int currentWalkDownFrame;
+    int framesCounter;
+    int framesSpeed;    
 
     Vector2 position;
     float movementSpeed;
-
-
-    int framesCounter;
-    int framesSpeed;
+    
 };
 
-void loadPlayer(Player& player); //Idle animation of the Player
+void loadPlayerTexture(Player& player); //Idle animation of the Player
 void movePlayerWithKeyboard(Player& player, float deltaTime);
 void unloadPlayer(Player& player);

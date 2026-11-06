@@ -118,7 +118,7 @@ int main(){
     // ==========================================
 
     Player player;
-    loadPlayer(player);
+    loadPlayerTexture(player);
 
 
     // =======================================
@@ -168,8 +168,17 @@ int main(){
         // Draws the Player
         if(player.isPlayerWalking){
             DrawTextureRec(player.walkTexture, player.walkFrameRec, player.position, WHITE);
+        } 
 
-        } else{
+        else if(player.isFacingUp){
+            DrawTextureRec(player.walkUpTexture, player.walkUpFrameRec, player.position, WHITE);
+        }
+        
+        else if(player.isFacingDown){
+            DrawTextureRec(player.walkDownTexture, player.walkDownFrameRec, player.position, WHITE);
+        }
+
+        else{
             DrawTextureRec(player.idleTexture, player.idleFrameRec,player.position,WHITE);
         }
 
